@@ -95,7 +95,7 @@ void command_prompt(void *pvParameters)
 	while(1){
                 fio_printf(1, "%s", hint);
 		fio_read(0, buf, 127);
-	
+
 		int n=parse_command(buf, argv);
 
 		/* will return pointer to the command function */
@@ -116,7 +116,7 @@ void system_logger(void *pvParameters)
     int handle, error;
     const portTickType xDelay = 100000 / 100;
 
-	char *creFile = "mkdir output";	
+	char *creFile = "mkdir -p output";	
 	host_action(SYS_SYSTEM, creFile, strlen(creFile) );
 	
     handle = host_action(SYS_OPEN, "output/syslog", 4);
