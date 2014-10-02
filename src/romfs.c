@@ -3,6 +3,7 @@
 #include <semphr.h>
 #include <unistd.h>
 #include "fio.h"
+#include "clib.h"
 #include "filesystem.h"
 #include "romfs.h"
 #include "osdebug.h"
@@ -85,9 +86,9 @@ static int romfs_open(void * opaque, const char * path, int flags, int mode) {
     const uint8_t * romfs = (const uint8_t *) opaque;
     const uint8_t * file;
     int r = -1;
-
+	//fio_printf(1, "\nhash: %X\n", h);
     file = romfs_get_file_by_hash(romfs, h, NULL);
-
+	
     if (file) {
         r = fio_open(romfs_read, NULL, romfs_seek, NULL, NULL);
         if (r > 0) {
