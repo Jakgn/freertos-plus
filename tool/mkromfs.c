@@ -30,7 +30,7 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
     struct dirent * ent;
     DIR * rec_dirp;
     uint32_t cur_hash = hash_djb2((const uint8_t *) curpath, hash_init);
-    uint32_t size, w, hash;
+    uint32_t size, w, hash, fn_size;
     uint8_t b;
     FILE * infile;
 
@@ -53,6 +53,7 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             processdir(rec_dirp, fullpath + strlen(prefix) + 1, outfile, prefix);
             closedir(rec_dirp);
         } else {
+			//printf("full path : %s\n", fullpath);
             hash = hash_djb2((const uint8_t *) ent->d_name, cur_hash);
             infile = fopen(fullpath, "rb");
             if (!infile) {
@@ -63,6 +64,17 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             b = (hash >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
+			/* store the length of file name */
+			fn_size = strlen(ent->d_name);	
+			b = (fn_size >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
+            b = (fn_size >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
+            b = (fn_size >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
+            b = (fn_size >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
+
+			/* store the file name */
+			fwrite(ent->d_name, 1, fn_size, outfile);
+			//printf("name's length : %zu\n", strlen(ent->d_name) );
+
             fseek(infile, 0, SEEK_END);
             size = ftell(infile);
             fseek(infile, 0, SEEK_SET);
@@ -70,6 +82,7 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             b = (size >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (size >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (size >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
+
             while (size) {
                 w = size > 16 * 1024 ? 16 * 1024 : size;
                 fread(buf, 1, w, infile);
