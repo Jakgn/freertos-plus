@@ -4,7 +4,8 @@
 #include <string.h>
 #include "fio.h"
 #include "filesystem.h"
-
+#include <math.h>
+#include <stdlib.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "host.h"
@@ -60,7 +61,26 @@ int parse_command(char *str, char *argv[]){
 }
 
 void ls_command(int n, char *argv[]){
-
+	int * r = fs_ls(); 
+	int num, count;
+	char buf[128];
+	//char ** dir;
+	if(r == NULL) {
+		fio_printf(1, "fs_ls() return fail!");
+		return;
+	}
+	fio_printf(1, "\r\n");
+	
+	for(num=1;num<=r[0];num++) {	//r[0] is record how many file 
+		while((count=fio_read(r[num], buf, sizeof(buf)))>0){
+			memcpy(buf, buf+10, count-10);
+			buf[count-10] = '\0';
+			fio_write(1, buf, count-10);
+			fio_printf(1, "\r\n");
+			//memcpy(dir[num-1], buf, count);			
+		}	
+		fio_close(r[num]);
+	}
 }
 
 int filedump(const char *filename){
@@ -76,6 +96,7 @@ int filedump(const char *filename){
 	int count;
 	while((count=fio_read(fd, buf, sizeof(buf)))>0){
 		fio_write(1, buf, count);
+		fio_printf(1, "\r\n");
 	}
 
 	fio_close(fd);
@@ -146,20 +167,19 @@ void test_command(int n, char *argv[]) {
 
     fio_printf(1, "\r\n");
 
-    handle = host_action(SYS_OPEN, "output/syslog", 8);
+    handle = host_action(SYS_OPEN, "output/testlog", 8);
     if(handle == -1) {
         fio_printf(1, "Open file error!\n\r");
         return;
     }
 
-    char *buffer = "Test host_write function which can write data to output/syslog\n";
+    char *buffer = "Test host_write function which can write data to output/testlog\n";
     error = host_action(SYS_WRITE, handle, (void *)buffer, strlen(buffer));
     if(error != 0) {
         fio_printf(1, "Write file error! Remain %d bytes didn't write in the file.\n\r", error);
         host_action(SYS_CLOSE, handle);
         return;
     }
-
     host_action(SYS_CLOSE, handle);
 }
 
