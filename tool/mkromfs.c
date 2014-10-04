@@ -64,16 +64,15 @@ void processdir(DIR * dirp, const char * curpath, FILE * outfile, const char * p
             b = (hash >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (hash >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
-			/* store the length of file name */
-			fn_size = strlen(ent->d_name);	
+			/* store the length of file path */
+			fn_size = strlen(fullpath);	
 			b = (fn_size >>  0) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (fn_size >>  8) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (fn_size >> 16) & 0xff; fwrite(&b, 1, 1, outfile);
             b = (fn_size >> 24) & 0xff; fwrite(&b, 1, 1, outfile);
 
-			/* store the file name */
-			fwrite(ent->d_name, 1, fn_size, outfile);
-			//printf("name's length : %zu\n", strlen(ent->d_name) );
+			/* store the file path */
+			fwrite(fullpath, 1, fn_size, outfile);
 
             fseek(infile, 0, SEEK_END);
             size = ftell(infile);
