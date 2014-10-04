@@ -4,8 +4,6 @@
 #include <string.h>
 #include "fio.h"
 #include "filesystem.h"
-#include <math.h>
-#include <stdlib.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "host.h"
@@ -70,14 +68,14 @@ void ls_command(int n, char *argv[]){
 		return;
 	}
 	fio_printf(1, "\r\n");
-	
+	int i;	
 	for(num=1;num<=r[0];num++) {	//r[0] is record how many file 
 		while((count=fio_read(r[num], buf, sizeof(buf)))>0){
-			memcpy(buf, buf+10, count-10);
+			for(i=0 ; i<count-10 ; i++)
+				*(buf + i) = *(buf + 10 + i);
 			buf[count-10] = '\0';
 			fio_write(1, buf, count-10);
 			fio_printf(1, "\r\n");
-			//memcpy(dir[num-1], buf, count);			
 		}	
 		fio_close(r[num]);
 	}
