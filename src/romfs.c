@@ -66,6 +66,28 @@ static off_t romfs_seek(void * opaque, off_t offset, int whence) {
     return offset;
 }
 
+static int * romfs_ls(void * opaque) {
+	const uint8_t * meta = (const uint8_t *) opaque;
+	int r = -1, idx=1;
+	static int rtn[20]={0};
+	rtn[0]=0; //record the num
+	for (; get_unaligned(meta) && get_unaligned(meta); meta += get_unaligned(meta + 4) + get_unaligned(meta + 8 + get_unaligned(meta + 4) ) + 12) {
+		if(meta+8) {
+			r = fio_open(romfs_read, NULL, romfs_seek, NULL, NULL);
+			if (r > 0) {
+				romfs_fds[r].file = meta + 8;
+				romfs_fds[r].cursor = 0;
+				fio_set_opaque(r, romfs_fds + r);
+			}
+		}
+		rtn[idx++] = r;
+		rtn[0]++;
+		 
+    }
+		
+	return rtn;
+}
+
 const uint8_t * romfs_get_file_by_hash(const uint8_t * romfs, uint32_t h, uint32_t * len) {
     const uint8_t * meta;
 
@@ -102,5 +124,5 @@ static int romfs_open(void * opaque, const char * path, int flags, int mode) {
 
 void register_romfs(const char * mountpoint, const uint8_t * romfs) {
 //    DBGOUT("Registering romfs `%s' @ %p\r\n", mountpoint, romfs);
-    register_fs(mountpoint, romfs_open, (void *) romfs);
+    register_fs(mountpoint, romfs_open, romfs_ls, (void *) romfs);
 }

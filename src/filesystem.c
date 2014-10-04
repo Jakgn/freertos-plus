@@ -1,7 +1,7 @@
 #include "osdebug.h"
 #include "filesystem.h"
 #include "fio.h"
-
+#include "romfs.h"
 #include <stdint.h>
 #include <string.h>
 #include <hash-djb2.h>
@@ -11,6 +11,7 @@
 struct fs_t {
     uint32_t hash;
     fs_open_t cb;
+	fs_ls_t cb2;
     void * opaque;
 };
 
@@ -20,7 +21,7 @@ __attribute__((constructor)) void fs_init() {
     memset(fss, 0, sizeof(fss));
 }
 
-int register_fs(const char * mountpoint, fs_open_t callback, void * opaque) {
+int register_fs(const char * mountpoint, fs_open_t callback, fs_ls_t callback2, void * opaque) {
     int i;
     DBGOUT("register_fs(\"%s\", %p, %p)\r\n", mountpoint, callback, opaque);
     
@@ -29,6 +30,7 @@ int register_fs(const char * mountpoint, fs_open_t callback, void * opaque) {
             fss[i].hash = hash_djb2((const uint8_t *) mountpoint, -1);
             fss[i].cb = callback;
             fss[i].opaque = opaque;
+			fss[i].cb2 = callback2;
             return 0;
         }
     }
@@ -59,4 +61,15 @@ int fs_open(const char * path, int flags, int mode) {
     }
     
     return -1;
+}
+
+int * fs_ls() {
+    uint32_t hash;
+	int i;
+	hash = hash_djb2((const uint8_t *) "romfs", -1);	
+    for (i = 0; i < MAX_FS; i++) {
+        if (fss[i].hash == hash)
+            return fss[i].cb2(fss[i].opaque);
+    }
+	return NULL;
 }
