@@ -72,13 +72,11 @@ static int * romfs_ls(void * opaque) {
 	static int rtn[20]={0};
 	rtn[0]=0; //record the num
 	for (; get_unaligned(meta) && get_unaligned(meta); meta += get_unaligned(meta + 4) + get_unaligned(meta + 8 + get_unaligned(meta + 4) ) + 12) {
-		if(meta+8) {
-			r = fio_open(romfs_read, NULL, romfs_seek, NULL, NULL);
-			if (r > 0) {
-				romfs_fds[r].file = meta + 8;
-				romfs_fds[r].cursor = 0;
-				fio_set_opaque(r, romfs_fds + r);
-			}
+		r = fio_open(romfs_read, NULL, romfs_seek, NULL, NULL);
+		if (r > 0) {
+			romfs_fds[r].file = meta + 8;
+			romfs_fds[r].cursor = 0;
+			fio_set_opaque(r, romfs_fds + r);
 		}
 		rtn[idx++] = r;
 		rtn[0]++;
