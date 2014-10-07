@@ -162,16 +162,41 @@ void help_command(int n,char *argv[]){
 void test_command(int n, char *argv[]) {
     int handle;
     int error;
-
+	int i, j, len, digit, number = 0;
     fio_printf(1, "\r\n");
 
-    handle = host_action(SYS_OPEN, "output/testlog", 8);
+    handle = host_action(SYS_OPEN, "output/syslog", 8);
     if(handle == -1) {
         fio_printf(1, "Open file error!\n\r");
         return;
     }
+	if(n==2) {
+		len = strlen(argv[1]);
+		for(i=len-1 ; i>=0 ; i--)	{
+			digit = 1;
+			for(j=0; j<(len-(i+1)) ;j++)
+				digit *= 10;	
+			number += (*(argv[1]+i) - 48) * digit;	
+		}
+		int previous = 0;
+		int result = 1;
+		int sum;	
+		if(number == 0) {
+			fio_printf(1, "Fibonacci(0) is 0\r\n");
+			return;
+		} else if(number ==1) {
+			fio_printf(1, "Fibonacci(1) is 1\r\n");
+			return;
+		}
+		for(i=2;i<=number;i++) {
+			sum = previous + result;
+			previous = result;
+			result = sum;
+		}
+		fio_printf(1, "Fibonacci(%d) is %d\r\n", number, result);
+	}
 
-    char *buffer = "Test host_write function which can write data to output/testlog\n";
+    char *buffer = "Test host_write function which can write data to output/syslog\n";
     error = host_action(SYS_WRITE, handle, (void *)buffer, strlen(buffer));
     if(error != 0) {
         fio_printf(1, "Write file error! Remain %d bytes didn't write in the file.\n\r", error);
