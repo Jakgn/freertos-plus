@@ -162,7 +162,7 @@ void help_command(int n,char *argv[]){
 void test_command(int n, char *argv[]) {
     int handle;
     int error;
-	int i, j, len, digit, number = 0;
+	int i, len, digit=1, number = 0;
     fio_printf(1, "\r\n");
 
     handle = host_action(SYS_OPEN, "output/syslog", 8);
@@ -173,10 +173,8 @@ void test_command(int n, char *argv[]) {
 	if(n==2) {
 		len = strlen(argv[1]);
 		for(i=len-1 ; i>=0 ; i--)	{
-			digit = 1;
-			for(j=0; j<(len-(i+1)) ;j++)
-				digit *= 10;	
 			number += (*(argv[1]+i) - 48) * digit;	
+			digit *= 10;
 		}
 		int previous = 0;
 		int result = 1;
