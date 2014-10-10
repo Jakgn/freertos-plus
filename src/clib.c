@@ -12,7 +12,7 @@ size_t fio_printf(int fd, const char *format, ...){
 
 	int tmpint;
 	char *tmpcharp;
-	
+
 	for(i=0; format[i]; ++i){
 		if(format[i]=='%'){
 			switch(format[i+1]){
@@ -46,52 +46,60 @@ size_t fio_printf(int fd, const char *format, ...){
 }
 
 int sprintf(char *dest, const char *format, ...){
-        int i,count=0, p;
+	int i,count=0, p;
 
-        va_list(v1);
-        va_start(v1, format);
+	va_list(v1);
+	va_start(v1, format);
 
-        int tmpint;
-        char *tmpcharp;
+	int tmpint;
+	char *tmpcharp;
 	char tmpchar;
 
-        for(i=0, p=0; format[i]; ++i){
-                if(format[i]=='%'){
-                        switch(format[i+1]){
-                                case '%':
-                                        dest[p++]='%'; break;
-                                case 'd':
-                                case 'x':
+	for(i=0, p=0; format[i]; ++i){
+		if(format[i]=='%'){
+			switch(format[i+1]){
+				case '%':
+					dest[p++]='%'; break;
+					count++;
+				case 'd':
+				case 'x':
 				case 'X':
 				case 'u':
-                                        tmpint = va_arg(v1, int);
-                                        if(format[i+1]=='u')	
+					tmpint = va_arg(v1, int);
+					if(format[i+1]=='u')	
 						tmpcharp = utoa(format[i+1]=='X'?"0123456789ABCDEF":"0123456789abcdef" ,(unsigned)tmpint, 10);
 					else
 						tmpcharp = itoa(format[i+1]=='X'?"0123456789ABCDEF":"0123456789abcdef", tmpint, format[i+1]=='d'?10: 16);
-                                        //fio_write(fd, tmpcharp, 3);i
-					for(;*tmpcharp;++tmpcharp, ++p)
+					//fio_write(fd, tmpcharp, 3);i
+					for(;*tmpcharp;++tmpcharp, ++p) {
 						dest[p]=*tmpcharp;
-                                        break;
-                                case 's':
-                                        tmpcharp = va_arg(v1, char *);
-					for(;*tmpcharp;++tmpcharp, ++p)
+						count++;
+					}
+					break;
+				case 's':
+					tmpcharp = va_arg(v1, char *);
+					for(;*tmpcharp;++tmpcharp, ++p) {
 						dest[p]=*tmpcharp;
+						count++;
+					}
 					break;
 				case 'c':
 					tmpchar = va_arg(v1, int);
 					dest[p++]=tmpchar;
-                                        break;
-                        }
-                        /* Skip the next character */
-                        ++i;
-                }else
-                        dest[p++]=format[i];
-        }
+					count++;
+					break;
+			}
+			/* Skip the next character */
+			++i;
+		}else {
+			dest[p++]=format[i];
+			count++;
+		}
+	}
 
-        va_end(v1);
+	va_end(v1);
 	dest[p]='\0';
-        return count;
+	return count;
 }
 
 
